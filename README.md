@@ -9,9 +9,10 @@ requires docker
 
 XMLTV File:
 
-http://localhost:5000/static/hdhomerun.xml
+http://my.lan.ip.address:5000/static/hdhomerun.xml
+
 
 
 update:
 
-http://localhost:5000/update
+http://my.lan.ip.address:5000/update

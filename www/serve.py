@@ -2,7 +2,7 @@
 from flask import Flask
 from flask import render_template
 from hdhomerun import main as update_epg
-from sys import argv
+from hdhomerun import txt_m3u, write_m3u
 from os import environ
 
 app = Flask(__name__)
@@ -18,6 +18,13 @@ def welcome():
 def updater():
     message = "Updated EPG"
     update_epg(environ["TUNER_IP"])
+    return render_template('index.html', message=message)
+
+
+@app.route("/m3u")
+def m3u_updater():
+    message = "Updated M3U"
+    write_m3u(txt_m3u(environ["TUNER_IP"]))
     return render_template('index.html', message=message)
 
 

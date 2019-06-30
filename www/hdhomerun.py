@@ -5,18 +5,25 @@ import subprocess
 import sys
 import urllib.request
 import xml.etree.cElementTree as ET
-from pprint import pprint
 from xml.dom import minidom
 
-
-def fixDefaultEncoding():
-    nothing_to_do = 1
+output_folder = "/www/static"
 
 
 def loadGuideFromWeb(device_ip):
-    discover_url = json.loads(urllib.request.urlopen("http://my.hdhomerun.com/discover").read())[0]["DiscoverURL"]
     device_auth = json.loads(urllib.request.urlopen("http://%s/discover.json" % device_ip).read())['DeviceAuth']
     return json.loads(urllib.request.urlopen("http://my.hdhomerun.com/api/guide.php?DeviceAuth=%s" % device_auth).read())
+
+
+def genM3u(device_ip):
+    channel_lineup = json.loads(urllib.request.urlopen("http://{}/lineup.json".format(device_ip)).read())
+    header = "#EXTM3U"
+    fmt = '#EXTINF:0 tvg-chno="{CHNO}" tvg-name="{NAME}" group-title="Antenna",{CHNO}\n{URL}'
+    m3u_info = [fmt.format(NAME=chan["GuideName"],
+                           CHNO=chan["GuideNumber"],
+                           URL=chan["URL"]) for chan in channel_lineup]
+    m3u_info.insert(0, header)
+    return "\n".join(m3u_info)
 
 
 def generatXMLTV(data):
@@ -53,7 +60,6 @@ def generatXMLTV(data):
             if 'Filter' in program:
                 for filter in program['Filter']:
                     ET.SubElement(xmlProgram, "category").text = filter
-
     reformed_xml = minidom.parseString(ET.tostring(xml))
     return reformed_xml.toprettyxml(encoding='utf-8')
 
@@ -108,12 +114,20 @@ def saveJsonToFile(data, filename):
         json.dump(data, outfile, indent=4)
 
 
+def write_m3u(m3u):
+    with open("{}/hdhomerun.m3u".format(output_folder), "w") as o:
+        o.write(m3u)
+
+
+def txt_m3u(hdip):
+    m3u = genM3u(hdip)
+    return m3u
+
+
 def main(hdip):
     print('ip of hdhomerun is %s' % hdip)
-    fixDefaultEncoding()
-    data = loadGuideFromWeb(hdip)
-    xmltv = generatXMLTV(data)
-    saveStringToFile(xmltv, "/www/static/hdhomerun.xml")
+    saveStringToFile(generatXMLTV(loadGuideFromWeb(hdip)),
+                     "{}/hdhomerun.xml".format(output_folder))
 
 
 if __name__ == "__main__":
@@ -121,5 +135,5 @@ if __name__ == "__main__":
         print("Please provide device ip as first command line argument.")
         exit(0)
     else:
-        _ = sys.argv[1]
+        _ = sys.argv[1]  # ip
         main(_)
