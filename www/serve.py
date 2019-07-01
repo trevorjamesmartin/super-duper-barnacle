@@ -14,18 +14,25 @@ def welcome():
     return render_template('index.html', message=message)
 
 
-@app.route("/update")
-def updater():
+@app.route("/xml")
+def update_xml():
     message = "Updated EPG"
     update_epg(environ["TUNER_IP"])
     return render_template('index.html', message=message)
 
 
 @app.route("/m3u")
-def m3u_updater():
+def update_m3u():
     message = "Updated M3U"
     write_m3u(txt_m3u(environ["TUNER_IP"]))
     return render_template('index.html', message=message)
+
+
+@app.route("/update")
+def update_all():
+    update_epg(environ["TUNER_IP"])
+    write_m3u(txt_m3u(environ["TUNER_IP"]))
+    return render_template('index.html', message="files updated")
 
 
 if __name__ == "__main__":

@@ -6,13 +6,9 @@ requires docker
     ./run.sh IP.of.my.tuner
 
 
-
-XMLTV File:
-
-http://my.lan.ip.address:5000/static/hdhomerun.xml
-
+- web interface 
+    
+    http://local.area.network.IP:5000
 
 
-update:
 
-http://my.lan.ip.address:5000/update
